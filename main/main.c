@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include "nvs_flash.h"
+#include "WlanSoftAP.h"
 
 void app_main(void)
 {
-
+    StartWlanSoftAP("Esp32-OnE", "password");
 }
