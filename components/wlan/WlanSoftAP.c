@@ -41,13 +41,6 @@ esp_err_t StartWlanSoftAP(const char *ssid, const char *password)
             break;
         }
 
-        status = esp_event_loop_create_default();
-        if (status != ESP_OK)
-        {
-            LOGE(TAG, "create event loop failed");
-            break;
-        }
-
         m_wlan = esp_netif_create_default_wifi_ap();
 
         status = esp_event_handler_instance_register(WIFI_EVENT,

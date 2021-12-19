@@ -30,6 +30,13 @@ esp_err_t InitializeWifi(void)
             break;
         }
 
+        status = esp_event_loop_create_default();
+        if (status != ESP_OK)
+        {
+            LOGE(TAG, "create event loop failed");
+            break;
+        }
+
     } while (false);
 
     return status;
