@@ -3,6 +3,18 @@
 
 static const char *TAG = "Wlan";
 
+void DumpConnectionInfo(connection_info_t *pConnectionInfo)
+{
+    LOGI(TAG, "Connection Information:");
+    LOGI(TAG, "*****************************");
+    LOGI(TAG, "*  SSID:      %s", pConnectionInfo->ssid);
+    LOGI(TAG, "*  Password:  %s", pConnectionInfo->password);
+    LOGI(TAG, "*  IPAddress: " IPSTR, IP2STR(&pConnectionInfo->ipInfo.ip));
+    LOGI(TAG, "*  Gateway:   " IPSTR, IP2STR(&pConnectionInfo->ipInfo.gw));
+    LOGI(TAG, "*  Netmask:   " IPSTR, IP2STR(&pConnectionInfo->ipInfo.netmask));
+    LOGI(TAG, "*****************************\n");
+}
+
 esp_err_t InitializeWifi(void)
 {
     esp_err_t status = ESP_OK;
@@ -75,4 +87,13 @@ esp_err_t GetHostname(esp_netif_t *esp_netif, const char **hostname)
     *hostname = _hostname;
 
     return ret;
+}
+
+esp_err_t SetIpInfo(esp_netif_t *esp_netif, esp_netif_ip_info_t *ip_info)
+{
+    return ESP_OK;
+}
+esp_err_t GetIpInfo(esp_netif_t *esp_netif, esp_netif_ip_info_t *ip_info)
+{
+    return esp_netif_get_ip_info(esp_netif, ip_info);
 }

@@ -13,6 +13,14 @@
   "C_Cpp.intelliSenseEngine": "Tag Parser",
   "files.associations": {
     "wlansoftap.h": "c",
-    "functional": "c"
+    "functional": "c",
+    "connectioninfo.h": "c",
+    "*.inc": "c",
+    "array": "c",
+    "bitset": "c",
+    "string_view": "c",
+    "initializer_list": "c",
+    "regex": "c",
+    "utility": "c"
   }
 }

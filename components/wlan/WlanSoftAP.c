@@ -14,7 +14,7 @@ static void WlanSoftAPEventHandler(void *arg, esp_event_base_t event_base, int32
         LOGI(TAG, "WIFI_EVENT_AP_START");
 
     else if (event_id == WIFI_EVENT_AP_STOP)
-        LOGI(TAG, "WIFI_EVENT_AP_START");
+        LOGI(TAG, "WIFI_EVENT_AP_STOP");
 
     else if (event_id == WIFI_EVENT_AP_STACONNECTED)
     {
@@ -27,6 +27,22 @@ static void WlanSoftAPEventHandler(void *arg, esp_event_base_t event_base, int32
         wifi_event_ap_stadisconnected_t *event = (wifi_event_ap_stadisconnected_t *)event_data;
         LOGI(TAG, "station " MACSTR " leave, AID=%d", MAC2STR(event->mac), event->aid);
     }
+}
+
+static void PrintConnectionInfo(const char *ssid, const char *password)
+{
+    connection_info_t pConnectionInfo;
+    esp_netif_ip_info_t ip_info;
+
+    memcpy(pConnectionInfo.ssid, ssid, strlen(ssid));
+    memcpy(pConnectionInfo.password, password, strlen(password));
+
+    GetIpInfo(m_wlan, &ip_info);
+    pConnectionInfo.ipInfo = ip_info;
+
+    printf("\n");
+    LOGI(TAG, "start wlanAP completed.");
+    DumpConnectionInfo(&pConnectionInfo);
 }
 
 esp_err_t StartWlanSoftAP(const char *ssid, const char *password)
@@ -90,7 +106,7 @@ esp_err_t StartWlanSoftAP(const char *ssid, const char *password)
             break;
         }
 
-        LOGI(TAG, "start wlan-soft-ap successful. ssid:%s password:%s", ssid, password);
+        PrintConnectionInfo(ssid, password);
 
     } while (false);
 

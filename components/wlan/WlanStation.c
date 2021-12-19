@@ -17,6 +17,7 @@ static int s_retry_num = 0;
 
 esp_event_handler_instance_t instance_any_id;
 esp_event_handler_instance_t instance_got_ip;
+static connection_info_t pConnectionInfo;
 static esp_netif_t *m_wlan = NULL;
 
 static void WlanStationEventHandler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
@@ -46,9 +47,26 @@ static void WlanStationEventHandler(void *arg, esp_event_base_t event_base, int3
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
         LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
         s_retry_num = 0;
+        pConnectionInfo.ipInfo = event->ip_info;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
     }
 }
+
+//static void PrintConnectionInfo(const char *ssid, const char *password)
+//{
+//    connection_info_t pConnectionInfo;
+//    esp_netif_ip_info_t ip_info;
+//
+//    memcpy(pConnectionInfo.ssid, ssid, strlen(ssid));
+//    memcpy(pConnectionInfo.password, password, strlen(password));
+//
+//    GetIpInfo(m_wlan, &ip_info);
+//    pConnectionInfo.ipInfo = ip_info;
+//
+//    printf("\n");
+//    LOGI(TAG, "start wlan AP successful");
+//    DumpConnectionInfo(&pConnectionInfo);
+//}
 
 esp_err_t StartWlanStation(const char *ssid, const char *password)
 {
@@ -132,7 +150,13 @@ esp_err_t StartWlanStation(const char *ssid, const char *password)
 
         if (bits & WIFI_CONNECTED_BIT)
         {
-            LOGI(TAG, "start wlanSTA completed. connected to ssid:%s password:%s", ssid, password);
+            memcpy(pConnectionInfo.ssid, ssid, strlen(ssid));
+            memcpy(pConnectionInfo.password, password, strlen(password));
+
+            printf("\n");
+            LOGI(TAG, "start wlanSTA completed");
+            DumpConnectionInfo(&pConnectionInfo);
+
             status = ESP_OK;
         }
         else
