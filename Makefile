@@ -3,6 +3,6 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := Esp32-OnE
+PROJECT_NAME := oneCam
 
 include $(IDF_PATH)/make/project.mk
