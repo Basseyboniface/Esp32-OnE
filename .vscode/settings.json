@@ -5,7 +5,12 @@
     "interface/ftdi/esp32_devkitj_v1.cfg",
     "target/esp32.cfg"
   ],
-  "files.associations": {},
+  "files.associations": {
+    "esp_err.h": "c",
+    "esp_timer.h": "c",
+    "esp_wifi.h": "c",
+    "typeinfo": "c"
+  },
   "files.autoSave": "afterDelay",
   "editor.formatOnSave": true,
   "idf.flashType": "UART",
