@@ -1,0 +1,32 @@
+menu "oneCam Configuration"
+
+    menu "WiFi Credentials"
+        config ONECAM_WIFI_SSID
+            string "oneCam wifi ssid"
+            default "oneCam-wiFi"
+            help
+                SSID (network name) for the application to connect to.
+        
+        config ONECAM_WIFI_PASSWORD
+            string "oneCam wifi password"
+            default "password"
+            help
+                WiFi password (WPA or WPA2) for the application to use.
+    endmenu
+            
+    menu "Motion Detection"
+        config ENABLE_MOTION_DETECTION
+            bool "Enable oneCam motion detection"
+            default "y"
+            help
+                When enabled, motion detection will be activated.
+
+        config MOTION_DETECTION_PIN
+            depends on ENABLE_MOTION_DETECTION
+            int "oneCam motion detection button"
+            default 12
+            help
+                GPIO pin number to be used as motion detection input.
+    endmenu
+
+endmenu
