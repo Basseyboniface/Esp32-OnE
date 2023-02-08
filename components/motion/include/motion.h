@@ -33,10 +33,10 @@ extern "C"
      */
     void motion_init();
 
+#endif /* CONFIG_ENABLE_MOTION_DETECTION */
+
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* CONFIG_ENABLE_MOTION_DETECTION */
 
 #endif /* __MOTION_H__ */
