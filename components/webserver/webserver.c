@@ -9,7 +9,7 @@
 #include "webserver.h"
 #include "camera_defs.h"
 #include "flashlight.h"
-#include "html_page.h"
+#include "camera_html_gz.h"
 
 static const char *TAG = "oneCam-Webserver";
 
@@ -49,7 +49,7 @@ static esp_err_t root_handler(httpd_req_t *req)
 {
     httpd_resp_set_type(req, "text/html");
     httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
-    return httpd_resp_send(req, (const char *)html_content, html_content_len);
+    return httpd_resp_send(req, (const char *)camera_html_gz, camera_html_gz_len);
     return ESP_OK;
 }
 
