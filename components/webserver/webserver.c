@@ -45,12 +45,11 @@ static size_t jpg_encode_stream(void *arg, size_t index, const void *data, size_
     return len;
 }
 
-static esp_err_t root_handler(httpd_req_t *req)
+static esp_err_t index_handler(httpd_req_t *req)
 {
     httpd_resp_set_type(req, "text/html");
     httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
     return httpd_resp_send(req, (const char *)camera_html_gz, camera_html_gz_len);
-    return ESP_OK;
 }
 
 static esp_err_t control_handler(httpd_req_t *req)
@@ -158,7 +157,6 @@ static esp_err_t control_handler(httpd_req_t *req)
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     return httpd_resp_send(req, NULL, 0);
-    return ESP_OK;
 }
 
 static esp_err_t status_handler(httpd_req_t *req)
@@ -169,7 +167,6 @@ static esp_err_t status_handler(httpd_req_t *req)
         ESP_LOGE(TAG, "sensor is null");
         return ESP_FAIL;
     }
-    ESP_LOGE(TAG, "framesize = %u", sensor->status.framesize);
 
     static char json_response[1024];
     char *p = json_response;
@@ -214,6 +211,7 @@ static esp_err_t status_handler(httpd_req_t *req)
 
 static esp_err_t capture_handler(httpd_req_t *req)
 {
+    camera_fb_t *fb = NULL;
     esp_err_t ret = ESP_OK;
     int64_t frame_start = esp_timer_get_time();
 
@@ -222,7 +220,7 @@ static esp_err_t capture_handler(httpd_req_t *req)
     vTaskDelay(150 / portTICK_PERIOD_MS); // The LED requires ~150ms to "warm up"
 #endif
 
-    camera_fb_t *fb = esp_camera_fb_get();
+    fb = esp_camera_fb_get();
 
 #ifdef CONFIG_ENABLE_FLASHLIGHT
     flashlight_intensity(0);
@@ -235,31 +233,26 @@ static esp_err_t capture_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    ret = httpd_resp_set_type(req, "image/jpeg");
-    if (ret == ESP_OK)
-    {
-        ret = httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=capture.jpg");
-    }
+    httpd_resp_set_type(req, "image/jpeg");
+    httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=capture.jpg");
 
     size_t fb_len = 0;
-    if (ret == ESP_OK)
+    if (fb->format == PIXFORMAT_JPEG)
     {
-        if (fb->format == PIXFORMAT_JPEG)
-        {
-            fb_len = fb->len;
-            ret = httpd_resp_send(req, (const char *)fb->buf, fb->len);
-        }
-        else
-        {
-            jpg_chunking_t jchunk = {req, 0};
-            ret = frame2jpg_cb(fb, 80, jpg_encode_stream, &jchunk) ? ESP_OK : ESP_FAIL;
-            httpd_resp_send_chunk(req, NULL, 0);
-            fb_len = jchunk.len;
-        }
+        fb_len = fb->len;
+        ret = httpd_resp_send(req, (const char *)fb->buf, fb->len);
     }
+    else
+    {
+        jpg_chunking_t jchunk = {req, 0};
+        ret = frame2jpg_cb(fb, 80, jpg_encode_stream, &jchunk) ? ESP_OK : ESP_FAIL;
+        httpd_resp_send_chunk(req, NULL, 0);
+        fb_len = jchunk.len;
+    }
+
     esp_camera_fb_return(fb);
-    int64_t frame_end = esp_timer_get_time();
-    ESP_LOGE(TAG, "JPG: %luKB %lums", (uint32_t)(fb_len / 1024), (uint32_t)((frame_end - frame_start) / 1000));
+    // int64_t frame_end = esp_timer_get_time();
+    // ESP_LOGE(TAG, "JPG: %luKB %lums", (uint32_t)(fb_len / 1024), (uint32_t)((frame_end - frame_start) / 1000));
 
     return ret;
 }
@@ -334,13 +327,14 @@ static esp_err_t stream_handler(httpd_req_t *req)
         if (ret != ESP_OK)
             break;
 
-        int64_t frame_end = esp_timer_get_time();
-        int64_t frame_time = frame_end - last_frame;
-        last_frame = frame_end;
-        frame_time /= 1000;
-        ESP_LOGI(TAG, "MJPG: %luKB %lums (%.1ffps)",
-                 (uint32_t)(_jpg_buf_len / 1024),
-                 (uint32_t)frame_time, 1000.0 / (uint32_t)frame_time);
+        last_frame = esp_timer_get_time();
+        // int64_t frame_end = esp_timer_get_time();
+        // int64_t frame_time = frame_end - last_frame;
+        // last_frame = frame_end;
+        // frame_time /= 1000;
+        // ESP_LOGI(TAG, "MJPG: %luKB %lums (%.1ffps)",
+        //          (uint32_t)(_jpg_buf_len / 1024),
+        //          (uint32_t)frame_time, 1000.0 / (uint32_t)frame_time);
     }
 
 #ifdef CONFIG_ENABLE_FLASHLIGHT
@@ -363,42 +357,42 @@ esp_err_t webserver_start()
 
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 
-    httpd_uri_t uri_root = {
+    httpd_uri_t index_uri = {
         .uri = "/",
         .method = HTTP_GET,
-        .handler = root_handler,
+        .handler = index_handler,
         .user_ctx = NULL,
     };
 
-    httpd_uri_t uri_control = {
+    httpd_uri_t control_uri = {
         .uri = "/control",
         .method = HTTP_GET,
         .handler = control_handler,
         .user_ctx = NULL,
     };
 
-    httpd_uri_t uri_status = {
+    httpd_uri_t status_uri = {
         .uri = "/status",
         .method = HTTP_GET,
         .handler = status_handler,
         .user_ctx = NULL,
     };
 
-    httpd_uri_t uri_capture = {
+    httpd_uri_t capture_uri = {
         .uri = "/capture",
         .method = HTTP_GET,
         .handler = capture_handler,
         .user_ctx = NULL,
     };
 
-    httpd_uri_t uri_stream = {
+    httpd_uri_t stream_uri = {
         .uri = "/stream",
         .method = HTTP_GET,
         .handler = stream_handler,
         .user_ctx = NULL,
     };
 
-    ESP_LOGE(TAG, "starting capture-server on port: '%d'", config.server_port);
+    ESP_LOGI(TAG, "starting capture-server on port: '%d'", config.server_port);
     esp_err_t result = httpd_start(&snapshot_handle, &config);
     if (result != ESP_OK)
     {
@@ -406,10 +400,10 @@ esp_err_t webserver_start()
         return result;
     }
 
-    httpd_register_uri_handler(snapshot_handle, &uri_root);
-    httpd_register_uri_handler(snapshot_handle, &uri_control);
-    httpd_register_uri_handler(snapshot_handle, &uri_status);
-    httpd_register_uri_handler(snapshot_handle, &uri_capture);
+    httpd_register_uri_handler(snapshot_handle, &index_uri);
+    httpd_register_uri_handler(snapshot_handle, &control_uri);
+    httpd_register_uri_handler(snapshot_handle, &status_uri);
+    httpd_register_uri_handler(snapshot_handle, &capture_uri);
 
     config.server_port += 1;
     config.ctrl_port += 1;
@@ -417,7 +411,7 @@ esp_err_t webserver_start()
     result = httpd_start(&stream_handle, &config);
     if (result == ESP_OK)
     {
-        httpd_register_uri_handler(stream_handle, &uri_stream);
+        httpd_register_uri_handler(stream_handle, &stream_uri);
     }
 
     return result;

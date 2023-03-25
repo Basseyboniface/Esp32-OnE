@@ -69,10 +69,14 @@ esp_err_t camera_init()
     cfg.frame_size = FRAMESIZE_SVGA; // QQVGA-UXGA Do not use sizes above QVGA when not JPEG
     cfg.jpeg_quality = 12;           // 0-63 lower number means higher quality
     cfg.fb_count = 1;                // if more than one, i2s runs in continuous mode. Use only with JPEG
+    cfg.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
+    cfg.fb_location = CAMERA_FB_IN_DRAM;
 #ifdef CONFIG_ESP32_SPIRAM_SUPPORT
     cfg.frame_size = FRAMESIZE_UXGA; // QQVGA-UXGA Do not use sizes above QVGA when not JPEG
     cfg.jpeg_quality = 10;           // 0-63 lower number means higher quality
     cfg.fb_count = 2;                // if more than one, i2s runs in continuous mode. Use only with JPEG
+    cfg.grab_mode = CAMERA_GRAB_LATEST;
+    cfg.fb_location = CAMERA_FB_IN_PSRAM;
 #endif
 
     esp_err_t ret = esp_camera_init(&cfg);

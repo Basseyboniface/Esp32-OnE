@@ -62,7 +62,7 @@ void flashlight_intensity(uint8_t value)
     ledc_set_duty(CONFIG_LEDC_SPEED_MODE, CONFIG_LEDC_CHANNEL, duty);
     ledc_update_duty(CONFIG_LEDC_SPEED_MODE, CONFIG_LEDC_CHANNEL);
 
-    ESP_LOGI(TAG, "flashlight intensity set to: %d", duty);
+    // ESP_LOGI(TAG, "flashlight intensity set to: %d", duty);
 }
 
 #endif
