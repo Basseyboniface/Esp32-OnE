@@ -9,7 +9,17 @@
     "esp_err.h": "c",
     "esp_timer.h": "c",
     "esp_wifi.h": "c",
-    "typeinfo": "c"
+    "typeinfo": "c",
+    "stddef.h": "c",
+    "functional": "c",
+    "credentials.h": "c",
+    "array": "c",
+    "bitset": "c",
+    "string_view": "c",
+    "initializer_list": "c",
+    "ranges": "c",
+    "regex": "c",
+    "utility": "c"
   },
   "files.autoSave": "afterDelay",
   "editor.formatOnSave": true,
