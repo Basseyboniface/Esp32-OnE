@@ -8,11 +8,11 @@ extern "C"
 
 #include "esp_err.h"
 
-    esp_err_t sdcard_init();
+    esp_err_t onecam_sdcard_init();
 
-    esp_err_t sdcard_saveImage(unsigned char *buffer, size_t size);
+    esp_err_t onecam_save_image(unsigned char *buffer, size_t size);
 
-    void sdcard_deleteImage(const char *filename);
+    void onecam_delete_image(const char *filename);
 
 #ifdef __cplusplus
 }

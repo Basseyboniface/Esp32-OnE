@@ -10,6 +10,7 @@
 #include "camera_defs.h"
 #include "flashlight.h"
 #include "camera_html_gz.h"
+#include "onecam_motion.h"
 
 static const char *TAG = "oneCam-Webserver";
 
@@ -141,7 +142,7 @@ static esp_err_t control_handler(httpd_req_t *req)
         result = sensor->set_wb_mode(sensor, val);
     else if (!strcmp(variable, "ae_level"))
         result = sensor->set_ae_level(sensor, val);
-#ifdef CONFIG_ENABLE_FLASHLIGHT
+#ifdef CONFIG_ONECAM_ENABLE_CAM_FLASH
     else if (!strcmp(variable, "lamp"))
     {
         ledc_value = val;
@@ -196,7 +197,7 @@ static esp_err_t status_handler(httpd_req_t *req)
     p += sprintf(p, "\"hmirror\":%u,", sensor->status.hmirror);
     p += sprintf(p, "\"dcw\":%u,", sensor->status.dcw);
     p += sprintf(p, "\"colorbar\":%u,", sensor->status.colorbar);
-#ifdef CONFIG_ENABLE_FLASHLIGHT
+#ifdef CONFIG_ONECAM_ENABLE_CAM_FLASH
     p += sprintf(p, ",\"lamp\":%u", ledc_value);
 #else
     p += sprintf(p, ",\"lamp\":%d", 0);
@@ -209,23 +210,42 @@ static esp_err_t status_handler(httpd_req_t *req)
     return httpd_resp_send(req, json_response, strlen(json_response));
 }
 
-static esp_err_t capture_handler(httpd_req_t *req)
+static camera_fb_t *capture_image()
 {
     camera_fb_t *fb = NULL;
-    esp_err_t ret = ESP_OK;
-    int64_t frame_start = esp_timer_get_time();
 
-#ifdef CONFIG_ENABLE_FLASHLIGHT
+#ifdef CONFIG_ONECAM_ENABLE_CAM_FLASH
     flashlight_intensity(ledc_value);
     vTaskDelay(150 / portTICK_PERIOD_MS); // The LED requires ~150ms to "warm up"
 #endif
 
     fb = esp_camera_fb_get();
 
-#ifdef CONFIG_ENABLE_FLASHLIGHT
+#ifdef CONFIG_ONECAM_ENABLE_CAM_FLASH
     flashlight_intensity(0);
 #endif
 
+    return fb;
+}
+
+static esp_err_t capture_handler(httpd_req_t *req)
+{
+    // camera_fb_t *fb = NULL;
+    esp_err_t ret = ESP_OK;
+    int64_t frame_start = esp_timer_get_time();
+
+    // #ifdef CONFIG_ONECAM_ENABLE_CAM_FLASH
+    //     flashlight_intensity(ledc_value);
+    //     vTaskDelay(150 / portTICK_PERIOD_MS); // The LED requires ~150ms to "warm up"
+    // #endif
+    //
+    //     fb = esp_camera_fb_get();
+    //
+    // #ifdef CONFIG_ONECAM_ENABLE_CAM_FLASH
+    //     flashlight_intensity(0);
+    // #endif
+
+    camera_fb_t *fb = capture_image();
     if (!fb)
     {
         ESP_LOGE(TAG, "camera capture failed");
@@ -251,8 +271,8 @@ static esp_err_t capture_handler(httpd_req_t *req)
     }
 
     esp_camera_fb_return(fb);
-    // int64_t frame_end = esp_timer_get_time();
-    // ESP_LOGE(TAG, "JPG: %luKB %lums", (uint32_t)(fb_len / 1024), (uint32_t)((frame_end - frame_start) / 1000));
+    int64_t frame_end = esp_timer_get_time();
+    ESP_LOGI(TAG, "JPG: %luKB %lums", (uint32_t)(fb_len / 1024), (uint32_t)((frame_end - frame_start) / 1000));
 
     return ret;
 }
@@ -275,7 +295,7 @@ static esp_err_t stream_handler(httpd_req_t *req)
     if (ret != ESP_OK)
         return ESP_FAIL;
 
-#ifdef CONFIG_ENABLE_FLASHLIGHT
+#ifdef CONFIG_ONECAM_ENABLE_CAM_FLASH
     flashlight_intensity(ledc_value);
 #endif
 
@@ -337,7 +357,7 @@ static esp_err_t stream_handler(httpd_req_t *req)
         //          (uint32_t)frame_time, 1000.0 / (uint32_t)frame_time);
     }
 
-#ifdef CONFIG_ENABLE_FLASHLIGHT
+#ifdef CONFIG_ONECAM_ENABLE_CAM_FLASH
     flashlight_intensity(0);
 #endif
 
@@ -346,14 +366,29 @@ static esp_err_t stream_handler(httpd_req_t *req)
     return ret;
 }
 
+void callback_on_motion_detected(bool motion)
+{
+    printf("motion detected: %d", motion);
+    // camera_fb_t *fb = capture_image();
+    // if (!fb)
+    //{
+    //     esp_err_t ret = onecam_save_image(fb->buf, fb->len)
+    // }
+}
+
 esp_err_t webserver_start()
 {
+    // Initialize the camera
     esp_err_t ret = camera_init();
     if (ret != ESP_OK)
     {
         ESP_LOGE(TAG, "camera initialization failed");
         return ret;
     }
+
+    // Initialize the onecam motion detection
+    onecam_pir_register_callback(callback_on_motion_detected);
+    onecam_pir_init();
 
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 

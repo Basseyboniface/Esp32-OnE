@@ -6,7 +6,7 @@ extern "C"
 {
 #endif
 
-#ifdef CONFIG_ENABLE_FLASHLIGHT
+#ifdef CONFIG_ONECAM_ENABLE_CAM_FLASH
 
     /**
      * @brief   This function is called to initialize the camera flashlight
@@ -23,7 +23,7 @@ extern "C"
      */
     void flashlight_intensity(uint8_t value);
 
-#endif /* CONFIG_ENABLE_FLASHLIGHT */
+#endif /* CONFIG_ONECAM_ENABLE_CAM_FLASH */
 
 #ifdef __cplusplus
 }

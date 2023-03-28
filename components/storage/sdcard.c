@@ -14,7 +14,7 @@
 const char mount_point[] = "/sdcard";
 static const char *TAG = "sdCard";
 
-esp_err_t sdcard_init()
+esp_err_t onecam_sdcard_init()
 {
     esp_err_t result = ESP_FAIL;
 
@@ -45,7 +45,7 @@ esp_err_t sdcard_init()
     return result;
 }
 
-esp_err_t sdcard_saveImage(unsigned char *buffer, size_t size)
+esp_err_t onecam_save_image(unsigned char *buffer, size_t size)
 {
     int64_t timestamp = esp_timer_get_time();
 
@@ -68,7 +68,7 @@ esp_err_t sdcard_saveImage(unsigned char *buffer, size_t size)
     return ESP_OK;
 }
 
-void sdcard_deleteImage(const char *filename)
+void onecam_delete_image(const char *filename)
 {
     char *file = (char *)malloc((strlen(mount_point) + strlen(filename)) * sizeof(char));
     strcpy(file, mount_point);

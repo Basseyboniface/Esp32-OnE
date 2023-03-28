@@ -15,14 +15,14 @@ menu "oneCam Configuration"
     endmenu
             
     menu "Motion Detection"
-        config ENABLE_MOTION_DETECTION
+        config ONECAM_ENABLE_PIR_MOTION
             bool "Enable oneCam motion detection"
             default "y"
             help
                 When enabled, motion detection will be activated.
 
-        config MOTION_DETECTION_PIN
-            depends on ENABLE_MOTION_DETECTION
+        config ONECAM_PIR_PIN
+            depends on ONECAM_ENABLE_PIR_MOTION
             int "oneCam motion detection button"
             default 12
             help
@@ -30,14 +30,14 @@ menu "oneCam Configuration"
     endmenu
 
     menu "Camera Flashlight"
-        config ENABLE_FLASHLIGHT
+        config ONECAM_ENABLE_CAM_FLASH
             bool "Enable Camera Flashlight"
             default n
             help
                 Enable Camera Flash or IR Illuminator
 
         config LEDC_PIN
-            depends on ENABLE_FLASHLIGHT
+            depends on ONECAM_ENABLE_CAM_FLASH
             int "Camera Flash or IR Illuminator GPIO Pin"
             range 0 33
             default 4
@@ -45,7 +45,7 @@ menu "oneCam Configuration"
                 Set a pin to illuminate the onboard LED or IR Illuminator when streaming or taking snapshots.
         
         config LED_MAX_INTENSITY
-            depends on ENABLE_FLASHLIGHT
+            depends on ONECAM_ENABLE_CAM_FLASH
             int "LED Maximum Intensity (0-255)"
             range 0 255
             default 255
@@ -53,7 +53,7 @@ menu "oneCam Configuration"
                 Limit the maximum intensity of the LED while streaming to prevent overheating (0-255).
 
         choice LEDC_SPEED_MODE
-            depends on ENABLE_FLASHLIGHT
+            depends on ONECAM_ENABLE_CAM_FLASH
             bool "Select LEDC Timer Speed Mode"
             default LEDC_LOW_SPEED_MODE
             help 
@@ -67,7 +67,7 @@ menu "oneCam Configuration"
         endchoice
 
         config LEDC_TIMER
-            depends on ENABLE_FLASHLIGHT
+            depends on ONECAM_ENABLE_CAM_FLASH
             int "LEDC Timer"
             range 0 3
             default 1
@@ -75,7 +75,7 @@ menu "oneCam Configuration"
                 Select the LEDC Timer (0-3)
             
         config LEDC_CHANNEL
-            depends on ENABLE_FLASHLIGHT
+            depends on ONECAM_ENABLE_CAM_FLASH
             int "LEDC Channel"
             range 0 7
             default 1

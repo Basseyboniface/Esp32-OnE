@@ -19,7 +19,9 @@
     "initializer_list": "c",
     "ranges": "c",
     "regex": "c",
-    "utility": "c"
+    "utility": "c",
+    "queue.h": "c",
+    "complex": "c"
   },
   "files.autoSave": "afterDelay",
   "editor.formatOnSave": true,

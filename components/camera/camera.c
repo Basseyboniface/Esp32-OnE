@@ -84,7 +84,7 @@ esp_err_t camera_init()
     {
         camera_reset();
 
-#ifdef CONFIG_ENABLE_FLASHLIGHT
+#ifdef CONFIG_ONECAM_ENABLE_CAM_FLASH
         flashlight_init();
 #endif
     }
@@ -93,7 +93,7 @@ esp_err_t camera_init()
 
 void camera_deinit()
 {
-#ifdef CONFIG_ENABLE_FLASHLIGHT
+#ifdef CONFIG_ONECAM_ENABLE_CAM_FLASH
     flashlight_deinit();
 #endif
 }

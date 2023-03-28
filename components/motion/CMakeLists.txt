@@ -1,3 +1,3 @@
-idf_component_register(SRCS "motion.c"
+idf_component_register(SRCS "onecam_motion.c"
                     INCLUDE_DIRS "include"
                     REQUIRES driver)
